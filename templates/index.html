@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HN Show Titles</title>
+  <title>Startup Roast</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script src="https://unpkg.com/htmx.org@1.8.1"></script>
@@ -20,45 +20,135 @@
   gtag('config', 'G-N42VDYFEVV');
 </script>
 
+<style>
+  .sticky {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    background-color: white;
+    /* Ensure the background matches your page */
+  }
+</style>
+
 <body class="bg-gray-100 text-gray-900">
   <div class="container mx-auto p-4">
-    <h1 class="text-3xl font-bold mb-2">HackerNews Startup Roast</h1>
-    <h2 class="text-xl mb-4">Guess whther a launch is successful</h2>
-    {{if .}}
-    <ul class="space-y-4">
-      {{range .}}
-      <li class="bg-white p-4 rounded-lg shadow-md flex items-center">
-        <a href="{{.HNURL}}" target="_blank" class="flex-shrink-0 mr-4">
-          <img src="/static/y18.svg" alt="Logo" class="w-6 h-6">
-        </a>
-        <div>
-          <a href="{{.URL}}" target="_blank" class="text-blue-600 hover:underline">{{.Title}}</a>
-          <p class="text-sm text-gray-600">{{.TimeAgo}}</p>
-          <div class="mt-2 p-2 border border-gray-300 rounded  button-container">
-            <p class="text-gray-700 mb-2">Guess and Reveal</p>
-            <button hx-get="/reveal?objectID={{.ObjectID}}&action=bullish" hx-target="#result-{{.ObjectID}}" hx-swap="outerHTML"
-              onclick="this.closest('.button-container').style.display='none';"
-              class="text-sm text-white bg-blue-600 hover:bg-blue-700 font-bold py-2 px-4 rounded mr-2">
-              Bullish
-            </button>
-            <button hx-get="/reveal?objectID={{.ObjectID}}&action=bearish" hx-target="#result-{{.ObjectID}}" hx-swap="outerHTML"
-              onclick="this.closest('.button-container').style.display='none';"
-              class="text-sm text-white bg-red-600 hover:bg-red-700 font-bold py-2 px-4 rounded">
-              Bearish
-            </button>
+    <h1 class="text-3xl font-bold mb-2">Startup Roast</h1>
+    <h2 class="text-xl mb-4">Guess which launch has >40 upvotes</h2>
 
-            
+    <!-- <div class="flex justify-center mb-4">
+      <button id="toggle-hn" class="text-sm text-white bg-blue-600 hover:bg-blue-700 font-bold py-2 px-4 rounded mr-2"
+        onclick="showHN()">Show Hacker News</button>
+      <button id="toggle-ph" class="text-sm text-white bg-green-600 hover:bg-green-700 font-bold py-2 px-4 rounded"
+        onclick="showPH()">Show Product Hunt</button>
+    </div> -->
+    <div class="flex mb-4" id="banner">
+      <button id="toggle-hn" class="w-1/2 text-center text-sm text-white bg-blue-600 hover:bg-blue-700 font-bold py-4"
+        onclick="showHN()">Hacker News</button>
+      <button id="toggle-ph" class="w-1/2 text-center text-sm text-white bg-green-600 hover:bg-green-700 font-bold py-4"
+        onclick="showPH()">Product Hunt</button>
+    </div>
+
+    <div id="hn-section">
+      {{if .HackerNews}}
+      <ul class="space-y-4">
+        {{range .HackerNews}}
+        <li class="bg-white p-4 rounded-lg shadow-md flex items-center">
+          <a href="{{.HNURL}}" target="_blank" class="flex-shrink-0 mr-4">
+            <img src="/static/y18.svg" alt="Logo" class="w-6 h-6">
+          </a>
+          <div>
+            <a href="{{.URL}}" target="_blank" class="text-blue-600 hover:underline">{{.Title}}</a>
+            <p class="text-sm text-gray-600">{{.TimeAgo}}</p>
+            <div class="mt-2 p-2 border border-gray-300 rounded  button-container">
+              <p class="text-gray-700 mb-2">Guess and Reveal</p>
+              <button hx-get="/reveal?objectID={{.ObjectID}}&action=bullish" hx-target="#result-{{.ObjectID}}"
+                hx-swap="outerHTML" onclick="this.closest('.button-container').style.display='none';"
+                class="text-sm text-white bg-blue-600 hover:bg-blue-700 font-bold py-2 px-4 rounded mr-2">
+                Bullish
+              </button>
+              <button hx-get="/reveal?objectID={{.ObjectID}}&action=bearish" hx-target="#result-{{.ObjectID}}"
+                hx-swap="outerHTML" onclick="this.closest('.button-container').style.display='none';"
+                class="text-sm text-white bg-red-600 hover:bg-red-700 font-bold py-2 px-4 rounded">
+                Bearish
+              </button>
+            </div>
+            <p id="result-{{.ObjectID}}" class="text-sm text-gray-600 mt-2"></p>
           </div>
-          <p id="result-{{.ObjectID}}" class="text-sm text-gray-600 mt-2"></p>
-        </div>
-      </li>
+        </li>
+        {{end}}
+      </ul>
+      {{else}}
+      <p class="text-gray-600">No Hacker News titles found.</p>
       {{end}}
-    </ul>
-    {{else}}
-    <p class="text-gray-600">No titles found.</p>
-    {{end}}
+    </div>
+
+    <div id="ph-section" class="hidden">
+      {{if .ProductHunt}}
+      <ul class="space-y-4">
+        {{range .ProductHunt}}
+        <li class="bg-white p-4 rounded-lg shadow-md flex items-center">
+          <div class="flex-shrink-0 mr-4">
+            <img src="https://ph-static.imgix.net/ph-ios-icon.png" alt="Product Hunt Logo" class="w-6 h-6">
+          </div>
+          <div>
+            <a href="{{.URL}}" target="_blank" class="text-blue-600 hover:underline">{{.Name}}</a>
+            <p class="text-sm text-gray-600">{{.Tagline}}</p>
+            <div class="mt-2 p-2 border border-gray-300 rounded button-container">
+              <p class="text-gray-700 mb-2">Guess and Reveal</p>
+              <button hx-get="/reveal?objectID={{.ID}}&action=bullish" hx-target="#result-{{.ID}}" hx-swap="outerHTML"
+                onclick="this.closest('.button-container').style.display='none';"
+                class="text-sm text-white bg-blue-600 hover:bg-blue-700 font-bold py-2 px-4 rounded mr-2">
+                Bullish
+              </button>
+              <button hx-get="/reveal?objectID={{.ID}}&action=bearish" hx-target="#result-{{.ID}}" hx-swap="outerHTML"
+                onclick="this.closest('.button-container').style.display='none';"
+                class="text-sm text-white bg-red-600 hover:bg-red-700 font-bold py-2 px-4 rounded">
+                Bearish
+              </button>
+            </div>
+            <p id="result-{{.ID}}" class="text-sm text-gray-600 mt-2"></p>
+          </div>
+        </li>
+        {{end}}
+      </ul>
+      {{else}}
+      <p class="text-gray-600">No Product Hunt posts found.</p>
+      {{end}}
+    </div>
   </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const banner = document.getElementById('banner');
+    const bannerOffsetTop = banner.offsetTop;
+    const bannerWidth = banner.offsetWidth;
+
+    window.addEventListener('scroll', function () {
+      if (window.pageYOffset >= bannerOffsetTop) {
+        banner.classList.add('sticky');
+        banner.style.width = `${bannerWidth}px`;
+      } else {
+        banner.classList.remove('sticky');
+        banner.style.width = '';
+      }
+    });
+  });
+
+  function showHN() {
+    document.getElementById('hn-section').classList.remove('hidden');
+    document.getElementById('ph-section').classList.add('hidden');
+  }
+
+  function showPH() {
+    document.getElementById('ph-section').classList.remove('hidden');
+    document.getElementById('hn-section').classList.add('hidden');
+  }
+</script>
+
+
 </body>
+
 <footer class="bg-gray-800 text-white py-4">
   <div class="container mx-auto text-center">
     <a href="https://twitter.com/launchingmonkey" target="_blank" class="text-white hover:text-blue-500">
