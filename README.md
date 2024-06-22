@@ -1,1 +1,1 @@
-# betOnLaunches
+create an app.yaml file with your product hunt token and deploy it to google cloud

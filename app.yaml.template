@@ -1,0 +1,8 @@
+runtime: go122
+
+handlers:
+- url: /.*
+  script: auto
+
+env_variables:
+  PH_APP_CLIENT_CREDENTIALS_TOKEN: # Your Product Hunt token here

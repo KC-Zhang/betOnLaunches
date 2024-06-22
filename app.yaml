@@ -1,5 +1,0 @@
-runtime: go122
-
-handlers:
-- url: /.*
-  script: auto
