@@ -133,12 +133,12 @@ func fetchPHPosts() ([]PHPost, error) {
 	client := graphql.NewClient("https://api.producthunt.com/v2/api/graphql", graphql.WithHTTPClient(httpClient))
 
 	req := graphql.NewRequest(`
-        query ($postedAfter: DateTime!, $postedBefore: DateTime!) {
+        query ($postedAfter: DateTime!, $postedBefore: DateTime!, $after: String) {
             posts(
                 order: NEWEST
                 postedAfter: $postedAfter
                 postedBefore: $postedBefore
-								first: 100
+								after: $after
             ) {
                 edges {
                     node {
@@ -149,6 +149,10 @@ func fetchPHPosts() ([]PHPost, error) {
                         createdAt
                         votesCount
                     }
+                }
+								pageInfo {
+                    hasNextPage
+                    endCursor
                 }
             }
         }
@@ -170,29 +174,43 @@ func fetchPHPosts() ([]PHPost, error) {
 					VotesCount int    `json:"votesCount"`
 				} `json:"node"`
 			} `json:"edges"`
+			PageInfo struct {
+				HasNextPage bool   `json:"hasNextPage"`
+				EndCursor   string `json:"endCursor"`
+			} `json:"pageInfo"`
 		} `json:"posts"`
 	}
 
 	ctx := context.Background()
-	if err := client.Run(ctx, req, &response); err != nil {
-		client.Log = func(s string) { fmt.Println(s) } // This will log the request and response
-		return nil, fmt.Errorf("error making GraphQL request: %w", err)
-	}
-
 	var posts []PHPost
-	for _, edge := range response.Posts.Edges {
-		post := PHPost{
-			ID:         edge.Node.ID,
-			Name:       edge.Node.Name,
-			Tagline:    edge.Node.Tagline,
-			URL:        edge.Node.URL,
-			VotesCount: edge.Node.VotesCount,
-			TimeAgo:    calculateTimeAgo(edge.Node.CreatedAt, currentTimestamp),
-		}
-		posts = append(posts, post)
-		phPostsMap[edge.Node.ID] = post
-	}
+	i:=0
+	for i<10 {
+		i++
 
+		if err := client.Run(ctx, req, &response); err != nil {
+			client.Log = func(s string) { fmt.Println(s) }
+			return nil, fmt.Errorf("error making GraphQL request: %w", err)
+		}
+
+		for _, edge := range response.Posts.Edges {
+			post := PHPost{
+				ID:         edge.Node.ID,
+				Name:       edge.Node.Name,
+				Tagline:    edge.Node.Tagline,
+				URL:        edge.Node.URL,
+				VotesCount: edge.Node.VotesCount,
+				TimeAgo:    calculateTimeAgo(edge.Node.CreatedAt, currentTimestamp),
+			}
+			posts = append(posts, post)
+			phPostsMap[edge.Node.ID] = post
+		}
+
+		if !response.Posts.PageInfo.HasNextPage {
+			break
+		}
+
+		req.Var("after", response.Posts.PageInfo.EndCursor)
+	}
 	return posts, nil
 }
 func calculateTimeAgo(createdAt string, currentTimestamp int64) string {
