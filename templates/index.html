@@ -38,9 +38,9 @@
 
     <div class="flex mb-4" id="banner">
       <button id="toggle-hn" class="w-1/2 text-center text-sm text-white bg-blue-600 hover:bg-blue-700 font-bold py-4"
-        onclick="showHN()">Hacker News</button>
+        onclick="showHN()">Hacker News ({{len .HackerNews}})</button>
       <button id="toggle-ph" class="w-1/2 text-center text-sm text-white bg-green-600 hover:bg-green-700 font-bold py-4"
-        onclick="showPH()">Product Hunt</button>
+        onclick="showPH()">Product Hunt ({{len .ProductHunt}})</button>
       <div id="score-tracker" class="text-center mb-4">
         <p class="text-lg font-semibold">Score: <span id="correct-guesses">0</span>/<span id="total-guesses">0</span></p>
       </div>

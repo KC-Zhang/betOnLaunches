@@ -138,6 +138,7 @@ func fetchPHPosts() ([]PHPost, error) {
                 order: NEWEST
                 postedAfter: $postedAfter
                 postedBefore: $postedBefore
+								first: 100
             ) {
                 edges {
                     node {
