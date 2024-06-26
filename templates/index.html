@@ -34,19 +34,19 @@
 <body class="bg-gray-100 text-gray-900">
   <div class="container mx-auto p-4">
     <h1 class="text-3xl font-bold mb-2">Startup Roast</h1>
-    <h2 class="text-xl mb-4">Which launch is popular ?</h2>
+    <h2 class="text-xl mb-4">Which yesterday's launch is popular? (>40 upvotes) </h2>
 
     <div class="flex mb-4" id="banner">
-      <button id="toggle-hn" class="w-1/2 text-center text-sm text-white bg-blue-600 hover:bg-blue-700 font-bold py-4"
-        onclick="showHN()">Hacker News ({{len .HackerNews}})</button>
       <button id="toggle-ph" class="w-1/2 text-center text-sm text-white bg-green-600 hover:bg-green-700 font-bold py-4"
         onclick="showPH()">Product Hunt ({{len .ProductHunt}})</button>
+      <button id="toggle-hn" class="w-1/2 text-center text-sm text-white bg-blue-600 hover:bg-blue-700 font-bold py-4"
+        onclick="showHN()">Hacker News ({{len .HackerNews}})</button>
       <div id="score-tracker" class="text-center mb-4">
         <p class="text-lg font-semibold">Score: <span id="correct-guesses">0</span>/<span id="total-guesses">0</span></p>
       </div>
     </div>
 
-    <div id="hn-section">
+    <div id="hn-section" class="hidden">
       {{if .HackerNews}}
       <ul class="space-y-4">
         {{range .HackerNews}}
@@ -80,7 +80,7 @@
       {{end}}
     </div>
 
-    <div id="ph-section" class="hidden">
+    <div id="ph-section" >
       {{if .ProductHunt}}
       <ul class="space-y-4">
         {{range .ProductHunt}}

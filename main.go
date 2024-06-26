@@ -107,7 +107,7 @@ func (t *loggingTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 	}
 
 	// Log the raw response body
-	fmt.Println("Raw response body:", string(body))
+	// fmt.Println("Raw response body:", string(body))
 
 	// Reset the response body so it can be read again
 	resp.Body = ioutil.NopCloser(bytes.NewBuffer(body))
