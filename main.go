@@ -11,8 +11,8 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"math/rand"
 	"time"
-
 	"github.com/joho/godotenv"
 	"github.com/machinebox/graphql"
 )
@@ -211,7 +211,26 @@ func fetchPHPosts() ([]PHPost, error) {
 
 		req.Var("after", response.Posts.PageInfo.EndCursor)
 	}
-	return posts, nil
+
+	//filter the posts by votesCount, only show those higher than 40
+	successes := make([]PHPost, 0)
+	failures := make([]PHPost, 0)
+	for _, post := range posts {
+		if post.VotesCount > 40 {
+			successes = append(successes, post)
+		} else {
+			failures = append(failures, post)
+		}
+	}
+	numSecSuccesses := len(successes)
+	//randomly numSuccesses posts from failures
+	rand.Shuffle(len(failures), func(i, j int) { failures[i], failures[j] = failures[j], failures[i] })
+	for i := 0; i < numSecSuccesses; i++ {
+		successes = append(successes, failures[i])
+	}
+	// sort them randomly
+	rand.Shuffle(len(successes), func(i, j int) { successes[i], successes[j] = successes[j], successes[i] })
+	return successes, nil
 }
 func calculateTimeAgo(createdAt string, currentTimestamp int64) string {
 	layout := time.RFC3339
